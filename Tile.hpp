@@ -3,14 +3,19 @@
 
 #include "DataStructures.hpp"
 
-class Tile{
+class Tile
+{
     TileType m_tileType;
     double m_utility;
     double m_reward;
     ActionType m_actionType;
+
 public:
+    Tile();
     Tile(double reward, TileType tile = TileType::Normal);
+    void SetTileType(TileType type);
     TileType GetTileType();
+    void SetReward(double reward);
     double GetReward();
     void SetOptimalAction(ActionType action);
     ActionType GetOptimalAction();

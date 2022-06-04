@@ -1,6 +1,9 @@
-#include "Tile.hpp"
+#include "Map.hpp"
 
-int main(){
-    Tile tile(0);
+int main()
+{
+    Map map;
+    map.ReadMapFromFile("/home/jacek/Desktop/programming/markov/map1.markov");
+    map.PrintWorld();
     return 0;
 }

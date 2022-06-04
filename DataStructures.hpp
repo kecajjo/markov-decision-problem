@@ -1,7 +1,8 @@
 #ifndef DATA_STRUCTURES_HPP
 #define DATA_STRUCTURES_HPP
 
-enum class ActionType{
+enum class ActionType
+{
     Up,
     Right,
     Down,
@@ -9,7 +10,8 @@ enum class ActionType{
     Unknown
 };
 
-enum class TileType{
+enum class TileType
+{
     Normal,
     Start,
     Terminal,
