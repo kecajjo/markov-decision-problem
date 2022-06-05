@@ -3,14 +3,14 @@
 Tile::Tile() : m_reward(0),
                m_tileType(TileType::Normal),
                m_utility(0),
-               m_actionType(ActionType::Unknown)
+               m_actionType(ActionType::Up)
 {
 }
 
 Tile::Tile(double reward, TileType tile) : m_reward(reward),
                                            m_tileType(tile),
                                            m_utility(0),
-                                           m_actionType(ActionType::Unknown)
+                                           m_actionType(ActionType::Up)
 {
 }
 

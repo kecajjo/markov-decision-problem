@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include <iomanip>
+#include <time.h>
 
 Map::Map()
 {
@@ -21,6 +22,8 @@ Map::~Map()
 
 void Map::ReadMapFromFile(std::string filePath)
 {
+    m_score = 0;
+    srand((unsigned)time(NULL));
     //default params
     m_explorationParameter = 1;
     m_discountingParameter = 1;
@@ -108,6 +111,7 @@ void Map::ReadMapFromFile(std::string filePath)
                 for (int j = 0; j < m_sizeY; j++)
                 {
                     m_map[i][j].SetReward(m_defaultReward);
+                    m_map[i][j].SetOptimalAction(ActionType::Up);
                 }
             }
             r = true;
@@ -210,8 +214,9 @@ int Map::GetSizeY() const
 
 double Map::GetUtilityOfTile(int x, int y) const
 {
-    if(m_map[x][y].GetTileType() == TileType::Terminal){
-        return m_map[x][y].GetReward();    
+    if (m_map[x][y].GetTileType() == TileType::Terminal)
+    {
+        return m_map[x][y].GetReward();
     }
     return m_map[x][y].GetUtility();
 }
@@ -325,9 +330,12 @@ void Map::PrintWorld() const
             default:
                 std::cout << std::fixed;
                 std::cout << std::setprecision(4);
-                if(m_map[i][j].GetUtility() > 0){
-                std::cout << m_map[i][j].GetUtility();
-                } else{
+                if (m_map[i][j].GetUtility() > 0)
+                {
+                    std::cout << m_map[i][j].GetUtility();
+                }
+                else
+                {
                     std::cout << "      ";
                 }
             }
@@ -451,8 +459,14 @@ Map &Map::operator=(const Map &map)
             }
         }
     }
-    // m_agentPosition;
+    m_agentPosition = map.GetAgentPosition();
     m_moveChances = map.GetMoveChances();
+    m_score = map.GetScore();
+}
+
+double Map::GetScore() const
+{
+    return m_score;
 }
 
 Tile Map::GetTile(int x, int y) const
@@ -460,31 +474,83 @@ Tile Map::GetTile(int x, int y) const
     return m_map[x][y];
 }
 
-void Map::SetTile(int x, int y, const Tile &tile){
+void Map::SetTile(int x, int y, const Tile &tile)
+{
     m_map[x][y] = tile;
 }
 
-void Map::InitSaveMapResults(){
+void Map::InitSaveMapResults()
+{
     std::ofstream file("../DirectMarkov.graph");
     file << "iteration";
-    for(int i=0;i<m_sizeX;i++){
-        for(int j=0;j<m_sizeY;j++){
-            file << " [" << i+1 << "," << j+1 << "]";
+    for (int i = 0; i < m_sizeX; i++)
+    {
+        for (int j = 0; j < m_sizeY; j++)
+        {
+            file << " [" << i + 1 << "," << j + 1 << "]";
         }
     }
     file << std::endl;
     file.close();
 }
 
-void Map::SaveMapResults(int iteration){
+void Map::SaveMapResults(int iteration)
+{
     std::ofstream file("../DirectMarkov.graph", std::ios_base::app);
-    file << iteration+1;
+    file << iteration + 1;
     file << std::fixed << std::setprecision(4);
-    for(int i=0;i<m_sizeX;i++){
-        for(int j=0;j<m_sizeY;j++){
-            file << " " << GetUtilityOfTile(i,j);
+    for (int i = 0; i < m_sizeX; i++)
+    {
+        for (int j = 0; j < m_sizeY; j++)
+        {
+            file << " " << GetUtilityOfTile(i, j);
         }
     }
     file << std::endl;
     file.close();
+}
+
+void Map::Move(ActionType action)
+{
+    auto possibleResults = GetActionPossibleResults(action, m_agentPosition);
+    auto randomAction = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+    std::vector<double> randomMove;
+    for (int i = 0; i < possibleResults.size(); i++)
+    {
+        randomMove.push_back(possibleResults[i].second);
+    }
+    for (int i = 1; i < possibleResults.size(); i++)
+    {
+        randomMove[i] = randomMove[i] + randomMove[i - 1];
+    }
+
+    int x, y;
+    std::tie(x, y) = possibleResults[0].first.GetPosition();
+    m_agentPosition.SetPosition(x, y);
+    for (int i = 0; i < possibleResults.size(); i++)
+    {
+        if (randomAction < randomMove[i])
+        {
+            std::tie(x, y) = possibleResults[i].first.GetPosition();
+            m_agentPosition.SetPosition(x, y);
+            m_score += m_map[x][y].GetReward();
+            return;
+        }
+    }
+    m_score += m_map[x][y].GetReward();
+}
+
+void Map::RestartPos()
+{
+    m_agentPosition = m_startPosition;
+}
+
+Position Map::GetAgentPosition() const
+{
+    return m_agentPosition;
+}
+
+Position Map::GetStartPosition() const
+{
+    return m_startPosition;
 }

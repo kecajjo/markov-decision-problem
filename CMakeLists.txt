@@ -9,3 +9,11 @@ add_executable(DirectMarkov
     Map.cpp
     DirectMdp.cpp
 )
+
+add_executable(QLearning
+    QLearningMain.cpp
+    Tile.cpp
+    Position.cpp
+    Map.cpp
+    QLearning.cpp
+)

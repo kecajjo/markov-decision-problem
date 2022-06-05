@@ -19,6 +19,7 @@ class Map
     Position m_agentPosition;
     Position m_startPosition;
     std::map<char, double> m_moveChances; //f - forward, l - left, r - right, b - backward
+    double m_score;
 
 public:
     Map();
@@ -46,6 +47,11 @@ public:
     void SetTile(int x, int y, const Tile &tile);
     void InitSaveMapResults();
     void SaveMapResults(int iteration);
+    void Move(ActionType action);
+    void RestartPos();
+    Position GetAgentPosition() const;
+    Position GetStartPosition() const;
+    double GetScore() const;
 };
 
 #endif

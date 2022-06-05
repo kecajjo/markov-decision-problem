@@ -8,7 +8,7 @@
             "name": "g++ - Kompiluj i debuguj aktywny plik",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${fileDirname}/build/main",
+            "program": "${fileDirname}/build/QLearning",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
