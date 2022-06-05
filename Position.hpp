@@ -12,8 +12,10 @@ class Position
 public:
     Position(int x = 0, int y = 0);
     void SetPosition(int x, int y);
-    std::pair<int, int> GetPosition();
+    std::pair<int, int> GetPosition() const;
     void Move(ActionType action);
+    Position &operator=(const Position &pos);
+    bool operator==(const Position &pos) const;
 };
 
 #endif

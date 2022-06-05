@@ -173,9 +173,140 @@ void Map::ReadMapFromFile(std::string filePath)
     }
 }
 
-// Position Map::GetAgentsPosition();
+double Map::GetDiscountingParameter() const
+{
+    return m_discountingParameter;
+}
 
-void Map::PrintWorld()
+double Map::GetExplorationParameter() const
+{
+    return m_explorationParameter;
+}
+
+double Map::GetReward(int x, int y) const
+{
+    return m_map[x][y].GetReward();
+}
+
+void Map::SetOptimalActionForTile(int x, int y, ActionType action)
+{
+    m_map[x][y].SetOptimalAction(action);
+}
+
+ActionType Map::GetOptimalActionForTile(int x, int y) const
+{
+    return m_map[x][y].GetOptimalAction();
+}
+
+int Map::GetSizeX() const
+{
+    return m_sizeX;
+}
+
+int Map::GetSizeY() const
+{
+    return m_sizeY;
+}
+
+double Map::GetUtilityOfTile(int x, int y) const
+{
+    if(m_map[x][y].GetTileType() == TileType::Terminal){
+        return m_map[x][y].GetReward();    
+    }
+    return m_map[x][y].GetUtility();
+}
+
+void Map::SetUtilityOfTile(int x, int y, double utility)
+{
+    m_map[x][y].SetUtility(utility);
+}
+
+std::vector<std::pair<Position, double>> Map::GetActionPossibleResults(ActionType action, Position pos)
+{
+    std::vector<std::pair<Position, double>> retVal;
+    std::vector<std::pair<ActionType, double>> movesWithProbability;
+    switch (action)
+    {
+    case ActionType::Up:
+        movesWithProbability.push_back({ActionType::Up, m_moveChances['f']});
+        movesWithProbability.push_back({ActionType::Left, m_moveChances['l']});
+        movesWithProbability.push_back({ActionType::Right, m_moveChances['r']});
+        movesWithProbability.push_back({ActionType::Down, m_moveChances['b']});
+        break;
+    case ActionType::Right:
+        movesWithProbability.push_back({ActionType::Right, m_moveChances['f']});
+        movesWithProbability.push_back({ActionType::Up, m_moveChances['l']});
+        movesWithProbability.push_back({ActionType::Down, m_moveChances['r']});
+        movesWithProbability.push_back({ActionType::Left, m_moveChances['b']});
+        break;
+    case ActionType::Down:
+        movesWithProbability.push_back({ActionType::Down, m_moveChances['f']});
+        movesWithProbability.push_back({ActionType::Right, m_moveChances['l']});
+        movesWithProbability.push_back({ActionType::Left, m_moveChances['r']});
+        movesWithProbability.push_back({ActionType::Up, m_moveChances['b']});
+        break;
+    case ActionType::Left:
+        movesWithProbability.push_back({ActionType::Left, m_moveChances['f']});
+        movesWithProbability.push_back({ActionType::Down, m_moveChances['l']});
+        movesWithProbability.push_back({ActionType::Up, m_moveChances['r']});
+        movesWithProbability.push_back({ActionType::Right, m_moveChances['b']});
+        break;
+    }
+    for (int i = 0; i < movesWithProbability.size(); i++)
+    {
+        Position tmpPos = pos;
+        tmpPos.Move(movesWithProbability[i].first);
+        if (IsPositionAllowed(tmpPos))
+        {
+            retVal.push_back({tmpPos, movesWithProbability[i].second});
+        }
+        else
+        { //didnt move
+            retVal.push_back({pos, movesWithProbability[i].second});
+        }
+    }
+    for (int i = 0; i < retVal.size(); i++)
+    {
+        for (int j = i + 1; j < retVal.size(); j++)
+        {
+            if (retVal[i].first == retVal[j].first)
+            {
+                //if final position is the same add probabilities of both moves and delete second
+                retVal[i].second = retVal[i].second + retVal[j].second;
+                retVal.erase(retVal.begin() + j);
+                j--; //decrease j as curent element was removed
+            }
+        }
+        if (retVal[i].second < 0.000001)
+        {
+            retVal.erase(retVal.begin() + i);
+            i--;
+        }
+    }
+    return retVal;
+}
+
+bool Map::IsPositionAllowed(Position pos) const
+{
+    int x, y;
+    std::tie(x, y) = pos.GetPosition();
+    return IsPositionAllowed(x, y);
+}
+
+bool Map::IsPositionAllowed(int x, int y) const
+{
+    if (x < 0 || y < 0 || x >= m_sizeX || y >= m_sizeY)
+    {
+        return false;
+    }
+    if (m_map[x][y].GetTileType() == TileType::Prohibitet)
+    {
+        return false;
+    }
+    return true;
+}
+
+void Map::PrintWorld() const
 {
     for (int j = m_sizeY - 1; j >= 0; j--)
     {
@@ -194,7 +325,11 @@ void Map::PrintWorld()
             default:
                 std::cout << std::fixed;
                 std::cout << std::setprecision(4);
+                if(m_map[i][j].GetUtility() > 0){
                 std::cout << m_map[i][j].GetUtility();
+                } else{
+                    std::cout << "      ";
+                }
             }
             std::cout << "|";
         }
@@ -266,4 +401,65 @@ void Map::PrintWorld()
     }
     std::cout << std::string(7 * m_sizeX + 1, '_') << std::endl;
     std::cout << std::endl;
+}
+
+std::map<char, double> Map::GetMoveChances() const
+{
+    return m_moveChances;
+}
+
+double Map::GetDefaultReward() const
+{
+    return m_defaultReward;
+}
+
+Map &Map::operator=(const Map &map)
+{
+    if (m_sizeX != map.GetSizeX() || m_sizeY != map.GetSizeY())
+    {
+        if (m_map != nullptr)
+        {
+            for (int i = 0; i < m_sizeX; i++)
+            {
+                delete[] m_map[i];
+            }
+            delete[] m_map;
+            m_map = nullptr;
+        }
+    }
+    m_sizeX = map.GetSizeX();
+    m_sizeY = map.GetSizeY();
+    m_defaultReward = map.GetDefaultReward();
+    m_discountingParameter = map.GetDiscountingParameter();
+    m_explorationParameter = map.GetExplorationParameter();
+    if (m_map == nullptr)
+    {
+        m_map = new Tile *[m_sizeX];
+        for (int i = 0; i < m_sizeX; i++)
+        {
+            m_map[i] = new Tile[m_sizeY];
+        }
+    }
+    for (int i = 0; i < m_sizeX; i++)
+    {
+        for (int j = 0; j < m_sizeY; j++)
+        {
+            m_map[i][j] = map.GetTile(i, j);
+            if (map.GetTile(i, j).GetTileType() == TileType::Start)
+            {
+                m_startPosition.SetPosition(i, j);
+            }
+        }
+    }
+    // m_agentPosition;
+    m_moveChances = map.GetMoveChances();
+}
+
+Tile Map::GetTile(int x, int y) const
+{
+    return m_map[x][y];
+}
+
+void Map::SetTile(int x, int y, const Tile &tile){
+    m_map[x][y] = tile;
 }

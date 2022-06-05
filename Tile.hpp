@@ -13,14 +13,16 @@ class Tile
 public:
     Tile();
     Tile(double reward, TileType tile = TileType::Normal);
+    Tile(const Tile &tile);
     void SetTileType(TileType type);
-    TileType GetTileType();
+    TileType GetTileType() const;
     void SetReward(double reward);
-    double GetReward();
+    double GetReward() const;
     void SetOptimalAction(ActionType action);
-    ActionType GetOptimalAction();
+    ActionType GetOptimalAction() const;
     void SetUtility(double utility);
-    double GetUtility();
+    double GetUtility() const;
+    Tile &operator=(const Tile &tile);
 };
 
 #endif
