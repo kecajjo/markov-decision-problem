@@ -1,0 +1,4 @@
+set key outside
+set tics font "1"
+set key font "1"
+plot for [col=2:20] filename using 1:col with lines title columnheader

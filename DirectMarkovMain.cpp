@@ -5,7 +5,7 @@ int main(int argc, char *argv[])
     DirectMdp *mdp;
     double discounting, exploration;
     if(argc == 1)
-        mdp = new DirectMdp("../map.markov", 10000);
+        mdp = new DirectMdp("../map.markov", 57);
     else if (argc ==2){
         sscanf(argv[1],"%lf",&discounting);
         mdp = new DirectMdp("../map.markov", 10000, discounting);

@@ -463,3 +463,28 @@ Tile Map::GetTile(int x, int y) const
 void Map::SetTile(int x, int y, const Tile &tile){
     m_map[x][y] = tile;
 }
+
+void Map::InitSaveMapResults(){
+    std::ofstream file("../DirectMarkov.graph");
+    file << "iteration";
+    for(int i=0;i<m_sizeX;i++){
+        for(int j=0;j<m_sizeY;j++){
+            file << " [" << i+1 << "," << j+1 << "]";
+        }
+    }
+    file << std::endl;
+    file.close();
+}
+
+void Map::SaveMapResults(int iteration){
+    std::ofstream file("../DirectMarkov.graph", std::ios_base::app);
+    file << iteration+1;
+    file << std::fixed << std::setprecision(4);
+    for(int i=0;i<m_sizeX;i++){
+        for(int j=0;j<m_sizeY;j++){
+            file << " " << GetUtilityOfTile(i,j);
+        }
+    }
+    file << std::endl;
+    file.close();
+}

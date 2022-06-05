@@ -44,6 +44,8 @@ public:
     Map &operator=(const Map &map);
     Tile GetTile(int x, int y) const;
     void SetTile(int x, int y, const Tile &tile);
+    void InitSaveMapResults();
+    void SaveMapResults(int iteration);
 };
 
 #endif

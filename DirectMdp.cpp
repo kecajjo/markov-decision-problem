@@ -54,6 +54,7 @@ Tile DirectMdp::CalculateMdpForTile(int x, int y)
 
 void DirectMdp::Execute()
 {
+    m_map.InitSaveMapResults();
     for (int iteration = 0; iteration < m_iterations; iteration++)
     {
         for (int i = 0; i < m_map.GetSizeX(); i++)
@@ -66,6 +67,7 @@ void DirectMdp::Execute()
                 }
             }
         }
+        m_map.SaveMapResults(iteration);
         m_prevMap = m_map;
     }
     m_map.PrintWorld();
